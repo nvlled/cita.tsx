@@ -1,85 +1,84 @@
 #!/usr/bin/env -S deno run -A
 
-/*
-# cita.tsx (read backwards as xstatic)
+export const documentation = {
+  $what_is_this: `
+    cita.tsx is a single-file static site generator based on deno.
+    It aims are to be able to create type-safe pages
+    with typescript and jsx with minimal setup.
+    (Minimal if you already have vscode and deno setup)
+  `,
+  $target_users: `
+    Ideally, this tool would be used by people 
+    who knows how to use the commandline, and is comfortable
+    and likes working with typescript and jsx/tsx DSL.
+    This is purely a html build tool,
+    client-side scripts are not supported.
+  `,
 
-## What is this?
+  $getting_started: {
+    [1]: "install and setup deno (see below)",
+    [2]: [
+      `create a new directory`,
+      "```",
+      "$ mkdir my-new-site",
+      "$ cd my-new-site",
+      "```",
+    ].join("\n"),
+    [3]: "setup cita.tsx (see blow)",
+    [4]: `see help output \`$ ./cita.tsx -h\` `,
+    [5]: `create a page: \`$ ./cita.tsx new homepage.tsx\` `,
+    [6]: `build output: \`$ ./cita.tsx build\` `,
 
-cita.tsx is a static-site generator based on deno.
-Goals are to be able to create type-safe pages
-with typescript and jsx with minimal setup.
-(Minimal if already have vscode and deno setup)
+    NOTE: "> If you are using vscode, run do `Deno: Initialize Workspace Configuration`",
 
-## Who's this for?
+    $$setup_dino: {
+      [1]: "[install deno](https://deno.land/manual@v1.30.3/getting_started/installation)",
+      [2]: "If you are using vscode, [install extension](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)",
+    },
 
-Ideally, you are someone who knows how
-to use the commandline, and is comfortable
-with typescript and jsx/tsx DSL.
+    $$setup_cita: {
+      [1]: "Copy or download `cita.tsx` into a directory where your static site is",
+      [2]: "Inspect and read this file before running",
+      [3]: "Make sure it's running correctly: `$ deno run cita.tsx -h`",
+      [4]: "`$ chmod +x cita.tsx`",
+      NOTE: "> this uses deno -A for convenience. You can remove this or, just run do deno run cita.tsx and manually set the permissions.",
+    },
+  },
 
-Getting started
-================================================================================
-1. install and setup deno (see below)
-2. create a new directory
-   $ mkdir my-new-site 
-   $ cd my-new-site
-3. setup cita.tsx (see below)
-4. run the command
-   $ ./cita.tsx
+  $development_and_work_flow: {
+    [1]: "`./cita.tsx new posts/new-page.tsx`",
+    [2]: "`./cita.tsx dev`",
+    [3]: "open page in browser `http://localhost:8000` or whatever url is shown",
+    [4]: "edit any page, for example `some-page.tsx`, then save changes",
+    [5]: "refresh browser",
+    [6]: "goto step 4 or 1",
 
-If using vscode, run do `Deno: Initialize Workspace Configuration`
+    mapping: [
+      "Each `.tsx` files maps to `.html`",
+      "For example, to view `index.tsx` open http://localhost:8000/index.html,",
+      "or to view `posts/hello.tsx` open http://localhost:8000/posts/hello.html",
+    ].join("\n"),
 
+    NOTE: "> If you create new pages or directory, rerun `./cita.tsx dev`",
+  },
 
-Setup Deno
-================================================================================
-1. install deno 
-   https://deno.land/manual@v1.30.3/getting_started/installation
+  $building: [
+    "To build and output the HTML files:",
+    "```",
+    "$ ./cita.tsx build",
+    "```",
+    "Your static site should be in _build, or whatever is in config.buildDir.",
+  ].join("\n"),
 
-2. If using vscode, install extension 
-   https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno
+  $configuring_and_extension: `
+    You are free to modify and make changes to this file as you see fit.
+    On the minimum, you can change or add entries in the \`config\` variable below.
+    As the site gets more complex, you can add modules and split the 
+    larger pages into files.
+  `,
 
-Setup cita.tsx
-================================================================================
-1. Copy or download this file into a directory
-   where your static site is
-2. Inspect and read this file before running
-3. Make sure it's running correctly
-   $ deno run cita.tsx -h
-4. $ chmod +x cita.tsx
-
-Note: this uses deno -A for convenience. You can remove this or, just manually
-run do deno run cita.tsx
-
-
-Development and work flow
-================================================================================
-1. ./cita.tsx new posts/new-page.tsx
-2. ./cita.tsx dev
-3. open page in browser 
-   http://localhost:8000 or whatever url is shown
-4. edit any page, for example some-page.tsx
-   then save changes
-5. refresh browser
-
-The .tsx files maps to .html
-For example, to view index.tsx, open http://localhost:8000/index.html,
-or to view posts/hello.tsx, open http://localhost:8000/posts/hello.html
-
-Note: If you create new pages or directory, rerun ./cita.tsx dev
-
-Build
-================================================================================
-$ ./cita.tsx build
-You static site should be in _build, or whatever is in config.buildDir.
-   
-
-Configuring and extension
-================================================================================
-You are free to modify and make changes to this file as you see fit.
-On the minimum, you can change or add entries in the config variable below.
-As the site gets more complex, you can add modules.
-
-
-*/
+  toMarkdown() {},
+};
 
 import { createElement, h } from "preact";
 import type { JSX } from "preact";
