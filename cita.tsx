@@ -1,13 +1,92 @@
 #!/usr/bin/env -S deno run -A
 
+/*
+# cita.tsx (read backwards as xstatic)
+
+## What is this?
+
+cita.tsx is a static-site generator based on deno.
+Goals are to be able to create type-safe pages
+with typescript and jsx with minimal setup.
+(Minimal if already have vscode and deno setup)
+
+## Who's this for?
+
+Ideally, you are someone who knows how
+to use the commandline, and is comfortable
+with typescript and jsx/tsx DSL.
+
+Getting started
+================================================================================
+1. install and setup deno (see below)
+2. create a new directory
+   $ mkdir my-new-site 
+   $ cd my-new-site
+3. setup cita.tsx (see below)
+4. run the command
+   $ ./cita.tsx
+
+If using vscode, run do `Deno: Initialize Workspace Configuration`
+
+
+Setup Deno
+================================================================================
+1. install deno 
+   https://deno.land/manual@v1.30.3/getting_started/installation
+
+2. If using vscode, install extension 
+   https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno
+
+Setup cita.tsx
+================================================================================
+1. Copy or download this file into a directory
+   where your static site is
+2. Inspect and read this file before running
+3. Make sure it's running correctly
+   $ deno run cita.tsx -h
+4. $ chmod +x cita.tsx
+
+Note: this uses deno -A for convenience. You can remove this or, just manually
+run do deno run cita.tsx
+
+
+Development and work flow
+================================================================================
+1. ./cita.tsx new posts/new-page.tsx
+2. ./cita.tsx dev
+3. open page in browser 
+   http://localhost:8000 or whatever url is shown
+4. edit any page, for example some-page.tsx
+   then save changes
+5. refresh browser
+
+The .tsx files maps to .html
+For example, to view index.tsx, open http://localhost:8000/index.html,
+or to view posts/hello.tsx, open http://localhost:8000/posts/hello.html
+
+Note: If you create new pages or directory, rerun ./cita.tsx dev
+
+Build
+================================================================================
+$ ./cita.tsx build
+You static site should be in _build, or whatever is in config.buildDir.
+   
+
+Configuring and extension
+================================================================================
+You are free to modify and make changes to this file as you see fit.
+On the minimum, you can change or add entries in the config variable below.
+As the site gets more complex, you can add modules.
+
+
+*/
+
 import { createElement, h } from "preact";
 import type { JSX } from "preact";
 import { render as renderToString } from "https://esm.sh/preact-render-to-string@5.2.6";
 import { DOMParser } from "https://esm.sh/linkedom@0.14.22";
 import * as path from "https://deno.land/std@0.177.0/path/mod.ts";
 import { copy, ensureDir, walk } from "https://deno.land/std@0.177.0/fs/mod.ts";
-import { serveFile } from "https://deno.land/std@0.177.0/http/file_server.ts";
-import { contentType } from "https://deno.land/std@0.177.0/media_types/content_type.ts";
 import { Command } from "https://deno.land/x/cliffy@v0.25.7/command/command.ts";
 import { debounce } from "https://deno.land/std@0.177.0/async/debounce.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -16,10 +95,17 @@ import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
 // --------------------------------------------------------------------------------
 
 export const config = {
+  // The site title, to be used on your layout or pages
   siteName: "personal website",
-  devServerPort: 9000,
+  // You add can more entries here
+
+  // Where the html output will be placed
   buildDir: "./_build",
+
+  // Where to write the auto-generated sitemap.
   sitemapFile: "./sitemap_gen.ts",
+
+  // These files are copied to the build output
   assets: ["favicon.ico", "./assets"],
 };
 
@@ -280,51 +366,6 @@ export default sitemap;
     await Deno.writeTextFile("sitemap_gen.ts", content, {
       create: true,
     });
-  },
-
-  async startDevServer() {
-    const port = config.devServerPort;
-    const server = Deno.listen({ port });
-    console.log(
-      `HTTP webserver running.  Access it at:  http://localhost:${port}/`
-    );
-
-    for await (const conn of server) {
-      serveHttp(conn);
-    }
-
-    async function serveHttp(conn: Deno.Conn) {
-      const httpConn = Deno.serveHttp(conn);
-      for await (const requestEvent of httpConn) {
-        const request = requestEvent.request;
-        const url = new URL(request.url);
-        const ext = path.extname(url.pathname);
-        const notFound = new Response(`file not found`, {
-          status: 404,
-        });
-
-        if (ext && ext !== ".html") {
-          const filename = "." + path.sep + path.normalize(url.pathname);
-          const resp = await serveFile(request, filename);
-          requestEvent.respondWith(resp);
-          continue;
-        }
-
-        const page = await internal.getPageFile(url.pathname);
-        if (!page || !page.valid) {
-          requestEvent.respondWith(notFound);
-          continue;
-        }
-
-        const body = internal.renderPage(page);
-        requestEvent.respondWith(
-          new Response(body, {
-            status: 200,
-            headers: { "Content-Type": contentType(ext) ?? "" },
-          })
-        );
-      }
-    }
   },
 
   formatTitle(filename: string) {
