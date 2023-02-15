@@ -80,8 +80,8 @@ export const documentation = {
   toMarkdown() {},
 };
 
-import { createElement, h } from "preact";
-import type { JSX } from "preact";
+import { createElement, h } from "https://esm.sh/preact@10.12.1";
+import type { JSX, ComponentChildren } from "https://esm.sh/preact@10.12.1";
 import { render as renderToString } from "https://esm.sh/preact-render-to-string@5.2.6";
 import { DOMParser } from "https://esm.sh/linkedom@0.14.22";
 import * as path from "https://deno.land/std@0.177.0/path/mod.ts";
@@ -95,7 +95,7 @@ import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
 
 export const config = {
   // The site title, to be used on your layout or pages
-  siteName: "personal website",
+  siteName: "cita.tsx (xstatic)",
   // You add can more entries here
 
   // Where the html output will be placed
@@ -122,21 +122,29 @@ export interface Page {
   render: PageRender;
 }
 
+export { h, JSX, ComponentChildren };
+
 // --------------------------------------------------------------------------------
 
-const initDefaults = {
-  denoConfig: {
-    compilerOptions: {
-      jsxFactory: "h",
-    },
-    imports: {
-      preact: "https://esm.sh/preact@10.12.1",
-    },
-  },
+const templates = {
+  newPageTemplate: (filename: string) => `
+/** @jsx h */
+import { h, PageData, PageRender } from "${path.relative(
+    path.dirname(filename),
+    "./cita.tsx"
+  )}";
 
-  defaultLayout: `
-import { h, ComponentChildren } from "preact";
-import { config, getSiteTitle } from "./cita.tsx";
+export const data: PageData = {
+  title: "${internal.formatTitle(filename)}",
+};
+
+export const render: PageRender = () => {
+  return <div>hello world</div>;
+};`,
+
+  layoutTemplate: `
+/** @jsx h */
+import { h, ComponentChildren, config, getSiteTitle } from "./cita.tsx";
 
 export type LayoutProps = {
   title?: string;
@@ -175,15 +183,33 @@ type LoadedPage = Page & {
 };
 
 const internal = {
+  mapRelativePath(pagePath: string, href: string) {
+    if (!href) return "";
+    if (!href.match(/^https?:\/\//)) {
+      href = href.replace(".tsx", ".html");
+      href = path.relative(pagePath, href);
+    }
+    return href;
+  },
   renderPage(page: LoadedPage): string {
     const domParser = new DOMParser();
     const html = renderToString(page.render());
     const dom = domParser.parseFromString(html, "text/html");
-    for (const a of dom.querySelectorAll("a")) {
-      const anchor = a as HTMLAnchorElement;
-      anchor.href = anchor.href?.replace(".tsx", ".html");
-      anchor.href = path.relative(page.path, anchor.href);
+
+    // rewrite local hrefs to relative path
+    for (const a of dom.querySelectorAll("a, link, area, base")) {
+      const anchor = a as { href: string };
+      anchor.href = internal.mapRelativePath(page.path, anchor.href);
     }
+
+    // rewrite local srcs to relative path
+    for (const a of dom.querySelectorAll(
+      "audio, img, video, script, input, track, embed"
+    )) {
+      const node = a as { src: string };
+      node.src = internal.mapRelativePath(page.path, node.src);
+    }
+
     return dom.toString();
   },
 
@@ -292,7 +318,7 @@ const internal = {
         continue;
       }
       const paths = path.dirname(page.path).split(path.sep);
-      const key = path.parse(page.path).name.replace(/[ \.]/g, "_");
+      const key = path.parse(page.path).name.replace(/[- \.]/g, "_");
 
       if (paths[0] === ".") {
         paths.shift();
@@ -369,23 +395,13 @@ export default sitemap;
 
   formatTitle(filename: string) {
     filename = path.basename(filename, ".tsx");
-    filename = filename.replace(/[._-]/, " ");
+    filename = filename.replace(/[._-]/g, " ");
     filename = filename.split(/\s+/).join(" ");
     return filename.slice(0, 1).toUpperCase() + filename.slice(1);
   },
 
   async createNewPage(filename: string) {
-    const contents = `
-import { h } from "preact";
-import { PageData, PageRender } from "./cita.tsx";
-
-export const data: PageData = {
-  title: "${internal.formatTitle(filename)}",
-};
-
-export const render: PageRender = () => {
-  return <div>hello world</div>;
-};`;
+    const contents = templates.newPageTemplate(filename);
 
     const dirname = path.dirname(filename);
     const basename = path.basename(filename, ".tsx") + ".tsx";
@@ -417,6 +433,8 @@ export const render: PageRender = () => {
   },
 };
 
+// --------------------------------------------------------------------------------
+
 type GlobalOptions = {
   generateSitemap?: boolean | undefined;
 };
@@ -441,6 +459,13 @@ const commands = {
       await internal.copyAssets();
     }
 
+    if (pages.every((p) => !p.valid)) {
+      if (!allPages) {
+        allPages = await internal.getPageFiles();
+      }
+      pages = allPages;
+    }
+
     await internal.buildHTML(pages);
   },
 
@@ -448,13 +473,27 @@ const commands = {
     await commands.build({ generateSitemap: true }, []);
     const watcher = Deno.watchFs(".");
 
-    const handleChange = debounce(async (paths: string[]) => {
-      paths = paths
-        .map((p) => path.relative(".", p))
-        .filter((p) => p.endsWith(".tsx"));
+    const assets = config.assets.map((p) => path.normalize(p));
 
-      if (paths.length > 0) {
-        const cmd = ["deno", "run", "-A", "cita.tsx", "build", ...paths];
+    const handleChange = debounce(async (paths: string[]) => {
+      let assetChanged = false;
+      const sourceFiles: string[] = [];
+
+      for (let p of paths) {
+        p = path.relative(".", p);
+        if (p.endsWith(".tsx")) {
+          sourceFiles.push(p);
+        } else if (!assetChanged) {
+          assetChanged = assets.some((a) => p.startsWith(a));
+        }
+      }
+      console.log({ assetChanged, sourceFiles });
+
+      if (assetChanged) {
+        internal.copyAssets();
+      }
+      if (sourceFiles.length > 0) {
+        const cmd = ["deno", "run", "-A", "cita.tsx", "build", ...sourceFiles];
         const proc = await Deno.run({
           cmd,
           stdout: "inherit",
@@ -462,7 +501,7 @@ const commands = {
         });
         await proc.status();
       }
-    }, 50);
+    }, 20);
 
     serve((req) => {
       return serveDir(req, {
@@ -486,14 +525,8 @@ const commands = {
   },
 
   async init() {
-    if (!internal.fileExists("deno.json")) {
-      await Deno.writeTextFile(
-        "deno.json",
-        JSON.stringify(initDefaults.denoConfig, null, 2)
-      );
-    }
     if (!internal.fileExists("components.tsx")) {
-      await Deno.writeTextFile("components.tsx", initDefaults.defaultLayout);
+      await Deno.writeTextFile("components.tsx", templates.layoutTemplate);
     }
     if (!internal.fileExists("index.tsx")) {
       await internal.createNewPage("index.tsx");
@@ -522,7 +555,7 @@ async function main() {
     .arguments("<file:string> [more-files...:string]")
     .action((options, ...args) => commands.createNewPages(args))
 
-    .command("init", "initializes with some config file and an index page")
+    .command("init", "creates an index page and a simple layout file")
     .action((options, ...args) => commands.init())
 
     .parse(Deno.args);
