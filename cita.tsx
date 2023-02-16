@@ -536,15 +536,8 @@ export default sitemap;
 
 // --------------------------------------------------------------------------------
 
-type GlobalOptions = {
-  generateSitemap?: boolean | undefined;
-};
-
 const commands = {
-  async build(
-    options: GlobalOptions & { autoReloadOnFocus?: boolean },
-    filenames: string[]
-  ) {
+  async build(options: { autoReloadOnFocus?: boolean }, filenames: string[]) {
     let pages: LoadedPage[] = [];
     let allPages: LoadedPage[] | undefined;
     if (filenames.length === 0) {
@@ -555,7 +548,7 @@ const commands = {
       pages = await Promise.all(ps);
     }
 
-    if (options.generateSitemap || filenames.length === 0) {
+    if (filenames.length === 0) {
       if (!allPages) {
         allPages = await internal.getPageFiles();
       }
@@ -573,11 +566,8 @@ const commands = {
     await internal.buildHTML(pages, options.autoReloadOnFocus);
   },
 
-  async devWatch(options: GlobalOptions, _: string[]) {
-    await commands.build(
-      { generateSitemap: true, autoReloadOnFocus: true },
-      []
-    );
+  async devWatch(options: {}, _: string[]) {
+    await commands.build({ autoReloadOnFocus: true }, []);
     const watcher = Deno.watchFs(".");
 
     const assets = config.assets.map((p) => path.normalize(p));
@@ -631,6 +621,11 @@ const commands = {
     }
   },
 
+  async generateSitemap() {
+    const pages = await internal.getPageFiles();
+    await internal.generateSiteMapFile(pages);
+  },
+
   async createNewPages(filenames: string[]) {
     for (const filename of filenames) {
       await internal.createNewPage(filename);
@@ -655,7 +650,6 @@ async function main() {
     .name("cliffy")
     .version("0.1.0")
     .description("Command line framework for Deno")
-    .globalOption("-g, --generate-sitemap", "Generate sitemap")
     .action(() => {
       console.log(documentation.$what_is_this);
       console.log("add -h to see help");
@@ -676,8 +670,11 @@ async function main() {
       commands.build(options, args);
     })
 
+    .command("gen-sitemap", "generate sitemap")
+    .action((options, ...args) => commands.generateSitemap())
+
     .command("dev", "build and watch for file changes")
-    .action((options, ...args) => commands.devWatch(options, args))
+    .action((options, ...args) => commands.devWatch({}, args))
 
     .command("new", "create a new pages")
     .arguments("<file:string> [more-files...:string]")
