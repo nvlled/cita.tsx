@@ -2,10 +2,14 @@
 
 export const documentation = {
   $what_is_this: [
+    "## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)",
+    "",
     "cita.tsx is a single-file static site generator based on deno.",
     "It aims are to be able to create type-safe pages",
     "with typescript and jsx with minimal setup.",
     "(Minimal if you already have vscode and deno setup)",
+    "",
+    "![](assets/demo.gif)",
   ].join("\n"),
 
   $target_users: [
@@ -647,6 +651,10 @@ const commands = {
     await internal.generateSiteMapFile(pages);
   },
 
+  async clean() {
+    await Deno.remove(config.buildDir, { recursive: true });
+  },
+
   async init() {
     if (!internal.fileExists("components.tsx")) {
       await Deno.writeTextFile("components.tsx", templates.layoutTemplate);
@@ -682,6 +690,9 @@ async function main() {
     .action((options, ...args) => {
       commands.build(options, args);
     })
+
+    .command("clean", "clean and remove all files from the build directory")
+    .action((options, ...args) => commands.clean())
 
     .command("gen-sitemap", "generate sitemap")
     .action((options, ...args) => commands.generateSitemap())

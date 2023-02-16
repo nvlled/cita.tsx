@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, PageData, PageRender, documentation } from "./cita.tsx";
+import { h, PageData, PageRender, documentation, md } from "./cita.tsx";
 import { Layout } from "./components.tsx";
 import sitemap from "./sitemap_gen.ts";
 
@@ -11,7 +11,9 @@ export const render: PageRender = () => {
   return (
     <Layout>
       <h2>What's this</h2>
-      <p>{documentation.$what_is_this}</p>
+      <p
+        dangerouslySetInnerHTML={{ __html: md(documentation.$what_is_this) }}
+      />
       <ul>
         <li>
           <a href={sitemap.contents.getting_started.path}>getting started</a>
