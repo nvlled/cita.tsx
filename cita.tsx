@@ -484,13 +484,22 @@ const internal = {
   async copyAssets() {
     for (const entry of config.assets) {
       if (!entry) continue;
-      try {
-        await copy(entry, path.join(config.buildDir, entry), {
-          overwrite: true,
-        });
-      } catch (e) {
-        if (!(e instanceof Deno.errors.NotFound)) {
-          console.log("failed to copy asset", entry, ":", e);
+
+      if (internal.isDirectory(entry)) {
+        await internal.copyDir(entry, path.join(config.buildDir));
+      } else {
+        try {
+          await copy(entry, path.join(config.buildDir, entry), {
+            overwrite: true,
+            preserveTimestamps: false,
+          });
+        } catch (e) {
+          if (
+            !(e instanceof Deno.errors.NotFound) &&
+            !(e instanceof Deno.errors.AlreadyExists)
+          ) {
+            console.log("failed to copy asset", entry, ":", e);
+          }
         }
       }
     }
@@ -535,6 +544,55 @@ export default sitemap;
       } else {
         console.log("failed to create new page:", e);
       }
+    }
+  },
+
+  async copyDir(dir: string, dest: string) {
+    await ensureDir(dest);
+
+    for await (const file of walk(dir, { includeDirs: false })) {
+      const destFile = path.join(dest, file.path);
+      await ensureDir(path.dirname(destFile));
+
+      const srcStat = await internal.stat(file.path);
+      const destStat = await internal.stat(destFile);
+
+      if (!srcStat) continue;
+      if (
+        !(
+          destStat &&
+          (srcStat.mtime?.getTime() ?? 0) <= (destStat.mtime?.getTime() ?? 0)
+        )
+      ) {
+        console.log("copy", file.path, "->", destFile);
+        await copy(file.path, destFile, {
+          overwrite: true,
+          preserveTimestamps: false,
+        });
+      }
+    }
+  },
+
+  async stat(filename: string) {
+    try {
+      return await Deno.stat(filename);
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) {
+        throw e;
+      }
+      return null;
+    }
+  },
+
+  isDirectory(filename: string) {
+    try {
+      const stat = Deno.statSync(filename);
+      return stat.isDirectory;
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) {
+        throw e;
+      }
+      return false;
     }
   },
 
