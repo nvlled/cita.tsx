@@ -193,12 +193,12 @@ export { h, JSX, ComponentChildren };
 // --------------------------------------------------------------------------------
 
 const templates = {
-  newPageTemplate: (filename: string) => `
+  newPageTemplate: (filename: string) =>
+    `
 /** @jsx h */
-import { h, PageData, PageRender } from "${path.relative(
-    path.dirname(filename),
-    "./cita.tsx"
-  )}";
+import { h, PageData, PageRender } from "${templates.getRelativeImport(
+      filename
+    )}";
 
 export const data: PageData = {
   title: "${internal.formatTitle(filename)}",
@@ -206,7 +206,7 @@ export const data: PageData = {
 
 export const render: PageRender = () => {
   return <div>hello world</div>;
-};`,
+};`.trim(),
 
   layoutTemplate: `
 /** @jsx h */
@@ -231,8 +231,7 @@ export function Layout({ title, children }: LayoutProps) {
     </html>
   );
 }
-
-  `,
+  `.trim(),
 
   reloadOnFocusScript: `
 var reload = false;
@@ -251,6 +250,14 @@ window.onfocus = function() {
   }
 };
   `,
+
+  getRelativeImport: (filename: string) => {
+    filename = path.relative(path.dirname(filename), "./cita.tsx");
+    if (!filename.match(/\.\/\w/)) {
+      filename = "./" + filename;
+    }
+    return filename;
+  },
 };
 
 export function getSiteTitle(pageTitle?: string) {
