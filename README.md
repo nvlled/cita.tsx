@@ -1,12 +1,12 @@
 # cita.tsx (backwards for xstatic)
 
 ## What is this
-## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)
-
 cita.tsx is a single-file static site generator based on deno.
 It aims are to be able to create type-safe pages
 with typescript and jsx with minimal setup.
 (Minimal if you already have vscode and deno setup)
+
+## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)
 
 ![](assets/demo.gif)
 

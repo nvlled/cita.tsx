@@ -2,12 +2,12 @@
 
 export const documentation = {
   $what_is_this: [
-    "## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)",
-    "",
     "cita.tsx is a single-file static site generator based on deno.",
     "It aims are to be able to create type-safe pages",
     "with typescript and jsx with minimal setup.",
     "(Minimal if you already have vscode and deno setup)",
+    "",
+    "## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)",
     "",
     "![](assets/demo.gif)",
   ].join("\n"),
@@ -652,7 +652,9 @@ const commands = {
   },
 
   async clean() {
-    await Deno.remove(config.buildDir, { recursive: true });
+    try {
+      await Deno.remove(config.buildDir, { recursive: true });
+    } catch (_) {}
   },
 
   async init() {
@@ -662,7 +664,6 @@ const commands = {
     if (!internal.fileExists("index.tsx")) {
       await internal.createNewPage("index.tsx");
     }
-    console.log(import.meta.url);
   },
 };
 
