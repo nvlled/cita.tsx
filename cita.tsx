@@ -80,6 +80,16 @@ export const documentation = {
   toMarkdown() {
     type header = keyof typeof documentation;
     type gsHeader = keyof typeof documentation.$getting_started;
+    const formatHeader = (header: header | gsHeader) => {
+      let str = header as string;
+      let count = 0;
+      while (str[count] === "$") count++;
+      str = str.replaceAll("$", "");
+      str = str.replace(/[._-]/g, " ");
+      str = str.slice(0, 1).toUpperCase() + str.slice(1);
+      str = "#".repeat(count + 1) + " " + str;
+      return str;
+    };
     const getSteps = (obj: Record<string, unknown>) => {
       const result: string[] = [];
       for (const [k, v] of Object.entries(obj)) {
@@ -90,43 +100,46 @@ export const documentation = {
       }
       return result.join("\n");
     };
-    const formatHeader = (header: header | gsHeader) => {
-      const text = "#" + (header as string).replaceAll("$", "#");
-      return text.slice(0, 1).toUpperCase() + text.slice(1);
+
+    const deindent = (str: string) => {
+      str = str.trim();
+      const lines = str.split("\n");
+      return lines.map((line) => line.trim()).join("\n");
     };
 
-    return `
-# cita.tsx
-${formatHeader("$what_is_this")}
-${documentation.$what_is_this}
+    return deindent(`
+      # cita.tsx (backwards for xstatic)
 
-${formatHeader("$target_users")}
-${documentation.$target_users}
+      ${formatHeader("$what_is_this")}
+      ${documentation.$what_is_this}
+
+      ${formatHeader("$target_users")}
+      ${documentation.$target_users}
 
 
-${formatHeader("$getting_started")}
-${getSteps(documentation.$getting_started)}
-${documentation.$getting_started.NOTE}
+      ${formatHeader("$getting_started")}
+      ${getSteps(documentation.$getting_started)}
+      ${documentation.$getting_started.NOTE}
 
-${formatHeader("$$setup_dino")}
-${getSteps(documentation.$getting_started.$$setup_dino)}
+      ${formatHeader("$$setup_dino")}
+      ${getSteps(documentation.$getting_started.$$setup_dino)}
 
-${formatHeader("$$setup_cita")}
-${getSteps(documentation.$getting_started.$$setup_cita)}
+      ${formatHeader("$$setup_cita")}
+      ${getSteps(documentation.$getting_started.$$setup_cita)}
 
-${formatHeader("$development_and_work_flow")}
-${getSteps(documentation.$development_and_work_flow)}
+      ${formatHeader("$development_and_work_flow")}
+      ${getSteps(documentation.$development_and_work_flow)}
 
-${documentation.$development_and_work_flow.mapping}
+      ${documentation.$development_and_work_flow.mapping}
 
-${documentation.$development_and_work_flow.NOTE}
+      ${documentation.$development_and_work_flow.NOTE}
 
-${formatHeader("$building")}
-${documentation.$building}
+      ${formatHeader("$building")}
+      ${documentation.$building}
 
-${formatHeader("$configuring_and_extension")}
-${documentation.$configuring_and_extension}
-    `;
+      ${formatHeader("$configuring_and_extension")}
+      ${documentation.$configuring_and_extension}
+  `);
   },
 
   getSteps(obj: Record<string, unknown>) {
