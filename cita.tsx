@@ -1,19 +1,20 @@
 #!/usr/bin/env -S deno run -A
 
 export const documentation = {
-  $what_is_this: `
-    cita.tsx is a single-file static site generator based on deno.
-    It aims are to be able to create type-safe pages
-    with typescript and jsx with minimal setup.
-    (Minimal if you already have vscode and deno setup)
-  `,
-  $target_users: `
-    Ideally, this tool would be used by people 
-    who knows how to use the commandline, and is comfortable
-    and likes working with typescript and jsx/tsx DSL.
-    This is purely a html build tool,
-    client-side scripts are not supported.
-  `,
+  $what_is_this: [
+    "cita.tsx is a single-file static site generator based on deno.",
+    "It aims are to be able to create type-safe pages",
+    "with typescript and jsx with minimal setup.",
+    "(Minimal if you already have vscode and deno setup)",
+  ].join("\n"),
+
+  $target_users: [
+    "Ideally, this tool would be used by people ",
+    "who knows how to use the commandline, and is comfortable",
+    "and likes working with typescript and jsx/tsx DSL.",
+    "This is purely a html build tool,",
+    "client-side scripts are not supported.",
+  ].join("\n"),
 
   $getting_started: {
     [1]: "install and setup deno (see below)",
@@ -25,9 +26,8 @@ export const documentation = {
       "```",
     ].join("\n"),
     [3]: "setup cita.tsx (see blow)",
-    [4]: `see help output \`$ ./cita.tsx -h\` `,
-    [5]: `create a page: \`$ ./cita.tsx new homepage.tsx\` `,
-    [6]: `build output: \`$ ./cita.tsx build\` `,
+    [4]: `create a page: \`$ ./cita.tsx new homepage.tsx\` `,
+    [5]: `build output: \`$ ./cita.tsx build\` `,
 
     NOTE: "> If you are using vscode, run do `Deno: Initialize Workspace Configuration`",
 
@@ -70,16 +70,78 @@ export const documentation = {
     "Your static site should be in _build, or whatever is in config.buildDir.",
   ].join("\n"),
 
-  $configuring_and_extension: `
-    You are free to modify and make changes to this file as you see fit.
-    On the minimum, you can change or add entries in the \`config\` variable below.
-    As the site gets more complex, you can add modules and split the 
-    larger pages into files.
-  `,
+  $configuring_and_extension: [
+    "You are free to modify and make changes to `cita.tsx` as you see fit.",
+    "On the minimum, you can change or add entries in the `config` variable below.",
+    "As the site gets more complex, you can add modules and split the ",
+    "larger pages into files.",
+  ].join("\n"),
 
-  toMarkdown() {},
-};
+  toMarkdown() {
+    type header = keyof typeof documentation;
+    type gsHeader = keyof typeof documentation.$getting_started;
+    const getSteps = (obj: Record<string, unknown>) => {
+      const result: string[] = [];
+      for (const [k, v] of Object.entries(obj)) {
+        const i = parseInt(k, 10);
+        if (typeof v === "string" && !isNaN(i)) {
+          result[i] = i + ". " + v;
+        }
+      }
+      return result.join("\n");
+    };
+    const formatHeader = (header: header | gsHeader) => {
+      const text = "#" + (header as string).replaceAll("$", "#");
+      return text.slice(0, 1).toUpperCase() + text.slice(1);
+    };
 
+    return `
+# cita.tsx
+${formatHeader("$what_is_this")}
+${documentation.$what_is_this}
+
+${formatHeader("$target_users")}
+${documentation.$target_users}
+
+
+${formatHeader("$getting_started")}
+${getSteps(documentation.$getting_started)}
+${documentation.$getting_started.NOTE}
+
+${formatHeader("$$setup_dino")}
+${getSteps(documentation.$getting_started.$$setup_dino)}
+
+${formatHeader("$$setup_cita")}
+${getSteps(documentation.$getting_started.$$setup_cita)}
+
+${formatHeader("$development_and_work_flow")}
+${getSteps(documentation.$development_and_work_flow)}
+
+${documentation.$development_and_work_flow.mapping}
+
+${documentation.$development_and_work_flow.NOTE}
+
+${formatHeader("$building")}
+${documentation.$building}
+
+${formatHeader("$configuring_and_extension")}
+${documentation.$configuring_and_extension}
+    `;
+  },
+
+  getSteps(obj: Record<string, unknown>) {
+    const result: string[] = [];
+    for (const [k, v] of Object.entries(obj)) {
+      const i = parseInt(k, 10);
+      if (typeof v === "string" && !isNaN(i)) {
+        result[i] = Marked.parse(v).content;
+      }
+    }
+    return result;
+  },
+} as const;
+
+import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 import { createElement, h } from "https://esm.sh/preact@10.12.1";
 import type { JSX, ComponentChildren } from "https://esm.sh/preact@10.12.1";
 import { render as renderToString } from "https://esm.sh/preact-render-to-string@5.2.6";
@@ -106,6 +168,10 @@ export const config = {
 
   // These files are copied to the build output
   assets: ["favicon.ico", "./assets"],
+
+  dev: {
+    autoReloadOnFocus: true,
+  },
 };
 
 export interface PageData {
@@ -167,6 +233,24 @@ export function Layout({ title, children }: LayoutProps) {
 }
 
   `,
+
+  reloadOnFocusScript: `
+var reload = false;
+  console.log("blur")
+window.onblur = function() { 
+  console.log("blur")
+  reload = true 
+};
+window.onfocus = function() { 
+  console.log("focus")
+  if (reload) {
+  console.log("reloading")
+  setTimeout(() => {
+    window.location = window.location;
+  }, 512)
+  }
+};
+  `,
 };
 
 export function getSiteTitle(pageTitle?: string) {
@@ -174,6 +258,10 @@ export function getSiteTitle(pageTitle?: string) {
     return `${pageTitle}- ${config.siteName}`;
   }
   return config.siteName;
+}
+
+export function md(markdown: string) {
+  return Marked.parse(markdown).content;
 }
 
 // --------------------------------------------------------------------------------
@@ -187,11 +275,11 @@ const internal = {
     if (!href) return "";
     if (!href.match(/^https?:\/\//)) {
       href = href.replace(".tsx", ".html");
-      href = path.relative(pagePath, href);
+      href = path.relative(pagePath, href).replace("../", "./");
     }
     return href;
   },
-  renderPage(page: LoadedPage): string {
+  renderPage(page: LoadedPage, autoReloadOnFocus?: boolean): string {
     const domParser = new DOMParser();
     const html = renderToString(page.render());
     const dom = domParser.parseFromString(html, "text/html");
@@ -208,6 +296,12 @@ const internal = {
     )) {
       const node = a as { src: string };
       node.src = internal.mapRelativePath(page.path, node.src);
+    }
+
+    if (autoReloadOnFocus && config.dev.autoReloadOnFocus) {
+      const script = dom.createElement("script");
+      script.textContent = templates.reloadOnFocusScript;
+      dom.appendChild(script);
     }
 
     return dom.toString();
@@ -341,7 +435,7 @@ const internal = {
     return { ...sitemap, ...result };
   },
 
-  async buildHTML(pages: LoadedPage[]) {
+  async buildHTML(pages: LoadedPage[], autoReloadOnFocus?: boolean) {
     await ensureDir(config.buildDir);
 
     for (const page of pages) {
@@ -349,7 +443,7 @@ const internal = {
         continue;
       }
 
-      const output = internal.renderPage(page);
+      const output = internal.renderPage(page, autoReloadOnFocus);
       const dest = path.join(
         config.buildDir,
         page.path.replace(".tsx", ".html")
@@ -440,7 +534,10 @@ type GlobalOptions = {
 };
 
 const commands = {
-  async build(options: GlobalOptions, filenames: string[]) {
+  async build(
+    options: GlobalOptions & { autoReloadOnFocus?: boolean },
+    filenames: string[]
+  ) {
     let pages: LoadedPage[] = [];
     let allPages: LoadedPage[] | undefined;
     if (filenames.length === 0) {
@@ -466,11 +563,14 @@ const commands = {
       pages = allPages;
     }
 
-    await internal.buildHTML(pages);
+    await internal.buildHTML(pages, options.autoReloadOnFocus);
   },
 
   async devWatch(options: GlobalOptions, _: string[]) {
-    await commands.build({ generateSitemap: true }, []);
+    await commands.build(
+      { generateSitemap: true, autoReloadOnFocus: true },
+      []
+    );
     const watcher = Deno.watchFs(".");
 
     const assets = config.assets.map((p) => path.normalize(p));
@@ -493,7 +593,15 @@ const commands = {
         internal.copyAssets();
       }
       if (sourceFiles.length > 0) {
-        const cmd = ["deno", "run", "-A", "cita.tsx", "build", ...sourceFiles];
+        const cmd = [
+          "deno",
+          "run",
+          "-A",
+          "cita.tsx",
+          "build",
+          "--auto-reload-on-focus",
+          ...sourceFiles,
+        ];
         const proc = await Deno.run({
           cmd,
           stdout: "inherit",
@@ -541,9 +649,22 @@ async function main() {
     .version("0.1.0")
     .description("Command line framework for Deno")
     .globalOption("-g, --generate-sitemap", "Generate sitemap")
+    .action(() => {
+      console.log(documentation.$what_is_this);
+      console.log("add -h to see help");
+    })
+
+    .command("doc", "show markdown documentation")
+    .action((options, ...args) => {
+      console.log(documentation.toMarkdown());
+    })
 
     .command("build", "build HTML")
     .arguments("[files...:string]")
+    .option(
+      "-a, --auto-reload-on-focus",
+      "adds a script on pages that makes it auto-reload when the page is focused"
+    )
     .action((options, ...args) => {
       commands.build(options, args);
     })
