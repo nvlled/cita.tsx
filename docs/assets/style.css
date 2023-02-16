@@ -19,12 +19,10 @@ code {
 blockquote {
     background: #444;
     margin: 0;
-    padding: 1px 50px;
+    padding: 1px 30px;
+    border-left: 10px solid #777
 }
-blockquote > p::before{
-    content: "ℹ️ "
 
-}
 
 .flex-row {
     display: flex;
@@ -42,4 +40,8 @@ nav.site-nav li::after {content: "]";}
 nav.site-nav li {
     display: inline-block;
     margin-right: 10px;
+}
+
+footer {
+    height: 50px;
 }

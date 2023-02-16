@@ -44,7 +44,18 @@ export function Layout({ title, children }: LayoutProps) {
         <div className="contents">
           <div>{children}</div>
         </div>
+        <footer />
       </body>
     </html>
+  );
+}
+
+export type Link = { path: string; title: string };
+export function NexPrevLinks({ prev, next }: { prev?: Link; next?: Link }) {
+  return (
+    <div className="flex-row">
+      {prev ? <a href={prev.path}>⇦ {prev.title}</a> : <div />}
+      {next ? <a href={next.path}>{next.title} ⇨</a> : <div />}
+    </div>
   );
 }

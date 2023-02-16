@@ -1,13 +1,19 @@
 /** @jsx h */
 import { h, PageData, PageRender, documentation, md } from "./cita.tsx";
-import { Layout } from "./components.tsx";
+import { Layout, Link } from "./components.tsx";
 import sitemap from "./sitemap_gen.ts";
 
 export const data: PageData = {
   title: "Index",
 };
 
+type LinkData = { title: string; path: string };
+function Link({ data }: { data: LinkData }) {
+  return <a href={data.path}>{data.title}</a>;
+}
+
 export const render: PageRender = () => {
+  const { contents } = sitemap;
   return (
     <Layout>
       <h2>What's this</h2>
@@ -16,20 +22,16 @@ export const render: PageRender = () => {
       />
       <ul>
         <li>
-          <a href={sitemap.contents.getting_started.path}>getting started</a>
+          <Link data={contents.getting_started} />
         </li>
         <li>
-          <a href={sitemap.contents.development_and_workflow.path}>
-            development workflow
-          </a>
+          <Link data={contents.development_and_workflow} />
         </li>
         <li>
-          <a href={sitemap.contents.building.path}>building</a>
+          <Link data={contents.building} />
         </li>
         <li>
-          <a href={sitemap.contents.configuring_and_extension.path}>
-            configuring and extension
-          </a>
+          <Link data={contents.configuring_and_extension} />
         </li>
       </ul>
     </Layout>

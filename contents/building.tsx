@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, PageData, PageRender, documentation, md } from "../cita.tsx";
-import { Layout } from "../components.tsx";
+import { Layout, NexPrevLinks } from "../components.tsx";
 import sitemap from "../sitemap_gen.ts";
 
 export const data: PageData = {
@@ -17,14 +17,10 @@ export const render: PageRender = () => {
       <div dangerouslySetInnerHTML={{ __html: md(doc) }} />
 
       <br />
-      <div className="flex-row">
-        <a href={contents.development_and_workflow.path}>
-          previous: {contents.development_and_workflow.title}
-        </a>
-        <a href={contents.configuring_and_extension.path}>
-          next: {contents.configuring_and_extension.title}
-        </a>
-      </div>
+      <NexPrevLinks
+        prev={contents.development_and_workflow}
+        next={contents.configuring_and_extension}
+      />
     </Layout>
   );
 };

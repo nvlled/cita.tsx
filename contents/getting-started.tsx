@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, PageData, PageRender, documentation } from "../cita.tsx";
-import { Layout } from "../components.tsx";
+import { Layout, NexPrevLinks } from "../components.tsx";
 import sitemap from "../sitemap_gen.ts";
 
 export const data: PageData = {
@@ -35,9 +35,7 @@ export const render: PageRender = () => {
       </ol>
 
       <br />
-      <a href={contents.development_and_workflow.path}>
-        next: {contents.development_and_workflow.title}
-      </a>
+      <NexPrevLinks next={contents.development_and_workflow} />
     </Layout>
   );
 };
