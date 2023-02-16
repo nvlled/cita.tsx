@@ -1,0 +1,45 @@
+body {
+   max-width: 900px; 
+   margin: auto;
+   font-size: 150%;
+   color: #0fd;
+   background: #222;
+}
+
+a {
+    color: #0df;
+}
+
+code {
+    background: #001;
+    color: #2bf;
+    padding: 2px;
+}
+
+blockquote {
+    background: #444;
+    margin: 0;
+    padding: 1px 50px;
+}
+blockquote > p::before{
+    content: "ℹ️ "
+
+}
+
+.flex-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+nav.site-nav ul {
+    margin: 0;
+    padding: 0;
+}
+
+nav.site-nav li::before {content: "[";}
+nav.site-nav li::after {content: "]";}
+nav.site-nav li {
+    display: inline-block;
+    margin-right: 10px;
+}
