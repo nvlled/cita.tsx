@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -A
-const version = "0.3.0";
+const version = "0.3.1";
 
 //  ▄████▄   ██▓▄▄▄█████▓ ▄▄▄           ▄▄▄█████▓  ██████ ▒██   ██▒
 // ▒██▀ ▀█  ▓██▒▓  ██▒ ▓▒▒████▄         ▓  ██▒ ▓▒▒██    ▒ ▒▒ █ █ ▒░
@@ -212,7 +212,14 @@ export const render: PageRender = () => {
 
   layoutTemplate: `
 /** @jsx h */
-import { h, ComponentChildren, config, getSiteTitle } from "./cita.tsx";
+import { h, ComponentChildren, config } from "./cita.tsx";
+
+function getSiteTitle(pageTitle?: string) {
+  if (pageTitle) {
+    return \`\${pageTitle} - \${config.siteName}\`;
+  }
+  return config.siteName;
+}
 
 export type LayoutProps = {
   title?: string;
