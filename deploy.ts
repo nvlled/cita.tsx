@@ -32,4 +32,5 @@ if (Deno.env.get("TAG")) {
 if (Deno.env.get("PUSH")) {
   console.log("push to remote repo");
   await $`git push --all`;
+  await $`git push --tags`;
 }

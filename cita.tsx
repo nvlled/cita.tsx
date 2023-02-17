@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -A
-export const version = "0.4.0";
+export const version = "0.5.0";
 
 //  ▄████▄   ██▓▄▄▄█████▓ ▄▄▄           ▄▄▄█████▓  ██████ ▒██   ██▒
 // ▒██▀ ▀█  ▓██▒▓  ██▒ ▓▒▒████▄         ▓  ██▒ ▓▒▒██    ▒ ▒▒ █ █ ▒░
@@ -153,7 +153,8 @@ export interface PageData {
   title: string;
   desc?: string;
   image?: string;
-  date?: string;
+  created: string;
+  $lastModified: string;
 }
 
 export type PageRender = () => JSX.Element;
@@ -190,6 +191,7 @@ import { Command } from "https://deno.land/x/cliffy@v0.25.7/command/command.ts";
 import { debounce } from "https://deno.land/std@0.177.0/async/debounce.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
+import { format as formatDate } from "https://deno.land/std@0.177.0/datetime/format.ts";
 
 // --------------------------------------------------------------------------------
 // ▄▄▄█████▓▓█████  ███▄ ▄███▓ ██▓███   ██▓    ▄▄▄     ▄▄▄█████▓▓█████   ██████
@@ -203,13 +205,15 @@ import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
 //             ░  ░       ░                ░  ░     ░  ░           ░  ░      ░
 //
 const templates = {
-  newPageTemplate: (filename: string) =>
+  newPage: (filename: string) =>
     `
 /** @jsx h */
 import { h, PageData, PageRender } from "${util.getRelativeImport(filename)}";
 
 export const data: PageData = {
   title: "${util.formatTitle(filename)}",
+  created: "${util.today()}",
+  $lastModified: "${util.today()}",
 };
 
 export const render: PageRender = () => {
@@ -396,6 +400,9 @@ const util = {
       return false;
     }
   },
+  today() {
+    return formatDate(new Date(), "yyyy-MM-dd");
+  },
 };
 
 type LoadedPage = Page & {
@@ -458,8 +465,8 @@ const internal = {
 
     let page: LoadedPage = {
       path: filename,
-      data: { title: "" },
       valid: false,
+      data: { title: "", created: "", $lastModified: "" },
       render: () => createElement("div", {}),
     };
 
@@ -493,8 +500,8 @@ const internal = {
 
       let page: LoadedPage = {
         path: entry.path,
-        data: { title: "" },
         valid: false,
+        data: { title: "", created: "", $lastModified: "" },
         render: () => createElement("div", {}),
       };
 
@@ -640,7 +647,7 @@ export default sitemap;
   },
 
   async createNewPage(filename: string) {
-    const contents = templates.newPageTemplate(filename);
+    const contents = templates.newPage(filename);
 
     const dirname = path.dirname(filename);
     const basename = path.basename(filename, ".tsx") + ".tsx";
@@ -845,6 +852,22 @@ const commands = {
       await internal.createNewPage("index.tsx");
     }
   },
+
+  async updateLastModified(filenames: string[]) {
+    for (const filename of filenames) {
+      const page = await internal.getPageFile(filename);
+      if (!page.valid) {
+        return;
+      }
+      let contents = await Deno.readTextFile(filename);
+      contents = contents.replace(
+        /\$lastModified:.*/,
+        `$lastModified: "${util.today()}",`
+      );
+
+      await Deno.writeTextFile(filename, contents);
+    }
+  },
 };
 
 // --------------------------------------------------------------------------------
@@ -894,6 +917,10 @@ async function main() {
     .command("new", "create a new pages")
     .arguments("<file:string> [more-files...:string]")
     .action((options, ...args) => commands.createNewPages(args))
+
+    .command("update-modified", "updates the last modified date of a page")
+    .arguments("<file:string> [more-files...:string]")
+    .action((options, ...args) => commands.updateLastModified(args))
 
     .command("init", "creates an index page and a simple layout file")
     .action((options, ...args) => commands.init())
