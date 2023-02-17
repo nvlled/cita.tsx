@@ -1,12 +1,13 @@
 /** @jsx h */
 import sitemap from "./sitemap_gen.ts";
-import {
-  h,
-  ComponentChildren,
-  config,
-  getSiteTitle,
-  documentation,
-} from "./cita.tsx";
+import { h, ComponentChildren, config, documentation } from "./cita.tsx";
+
+function getSiteTitle(pageTitle?: string) {
+  if (pageTitle) {
+    return `${pageTitle} - ${config.siteName}`;
+  }
+  return config.siteName;
+}
 
 export function Space() {
   return <span>&nbsp;</span>;

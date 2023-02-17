@@ -1,4 +1,16 @@
 #!/usr/bin/env -S deno run -A
+const version = "0.3.0";
+
+//  ▄████▄   ██▓▄▄▄█████▓ ▄▄▄           ▄▄▄█████▓  ██████ ▒██   ██▒
+// ▒██▀ ▀█  ▓██▒▓  ██▒ ▓▒▒████▄         ▓  ██▒ ▓▒▒██    ▒ ▒▒ █ █ ▒░
+// ▒▓█    ▄ ▒██▒▒ ▓██░ ▒░▒██  ▀█▄       ▒ ▓██░ ▒░░ ▓██▄   ░░  █   ░
+// ▒▓▓▄ ▄██▒░██░░ ▓██▓ ░ ░██▄▄▄▄██      ░ ▓██▓ ░   ▒   ██▒ ░ █ █ ▒
+// ▒ ▓███▀ ░░██░  ▒██▒ ░  ▓█   ▓██▒ ██▓   ▒██▒ ░ ▒██████▒▒▒██▒ ▒██▒
+// ░ ░▒ ▒  ░░▓    ▒ ░░    ▒▒   ▓▒█░ ▒▓▒   ▒ ░░   ▒ ▒▓▒ ▒ ░▒▒ ░ ░▓ ░
+//   ░  ▒    ▒ ░    ░      ▒   ▒▒ ░ ░▒      ░    ░ ░▒  ░ ░░░   ░▒ ░
+// ░         ▒ ░  ░        ░   ▒    ░     ░      ░  ░  ░   ░    ░
+// ░ ░       ░                 ░  ░  ░                 ░   ░    ░
+// ░                          [xstatic]
 
 export const documentation = {
   $what_is_this: [
@@ -6,11 +18,12 @@ export const documentation = {
     "It aims are to be able to create type-safe pages",
     "with typescript and jsx with minimal setup.",
     "(Minimal if you already have vscode and deno setup)",
-    "",
-    "## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)",
-    "",
-    "![](assets/demo.gif)",
   ].join("\n"),
+
+  $doclink:
+    "[demo/documentation](https://nvlled.github.io/cita.tsx/index.html)",
+
+  $demoImage: "![](assets/demo.gif)",
 
   $target_users: [
     "Ideally, this tool would be used by people ",
@@ -81,71 +94,6 @@ export const documentation = {
     "larger pages into files.",
   ].join("\n"),
 
-  toMarkdown() {
-    type header = keyof typeof documentation;
-    type gsHeader = keyof typeof documentation.$getting_started;
-    const formatHeader = (header: header | gsHeader) => {
-      let str = header as string;
-      let count = 0;
-      while (str[count] === "$") count++;
-      str = str.replaceAll("$", "");
-      str = str.replace(/[._-]/g, " ");
-      str = str.slice(0, 1).toUpperCase() + str.slice(1);
-      str = "#".repeat(count + 1) + " " + str;
-      return str;
-    };
-    const getSteps = (obj: Record<string, unknown>) => {
-      const result: string[] = [];
-      for (const [k, v] of Object.entries(obj)) {
-        const i = parseInt(k, 10);
-        if (typeof v === "string" && !isNaN(i)) {
-          result[i] = i + ". " + v;
-        }
-      }
-      return result.join("\n");
-    };
-
-    const deindent = (str: string) => {
-      str = str.trim();
-      const lines = str.split("\n");
-      return lines.map((line) => line.trim()).join("\n");
-    };
-
-    return deindent(`
-      # cita.tsx (backwards for xstatic)
-
-      ${formatHeader("$what_is_this")}
-      ${documentation.$what_is_this}
-
-      ${formatHeader("$target_users")}
-      ${documentation.$target_users}
-
-
-      ${formatHeader("$getting_started")}
-      ${getSteps(documentation.$getting_started)}
-      ${documentation.$getting_started.NOTE}
-
-      ${formatHeader("$$setup_dino")}
-      ${getSteps(documentation.$getting_started.$$setup_dino)}
-
-      ${formatHeader("$$setup_cita")}
-      ${getSteps(documentation.$getting_started.$$setup_cita)}
-
-      ${formatHeader("$development_and_work_flow")}
-      ${getSteps(documentation.$development_and_work_flow)}
-
-      ${documentation.$development_and_work_flow.mapping}
-
-      ${documentation.$development_and_work_flow.NOTE}
-
-      ${formatHeader("$building")}
-      ${documentation.$building}
-
-      ${formatHeader("$configuring_and_extension")}
-      ${documentation.$configuring_and_extension}
-  `);
-  },
-
   getSteps(obj: Record<string, unknown>) {
     const result: string[] = [];
     for (const [k, v] of Object.entries(obj)) {
@@ -158,23 +106,20 @@ export const documentation = {
   },
 } as const;
 
-import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
-import { createElement, h } from "https://esm.sh/preact@10.12.1";
-import type { JSX, ComponentChildren } from "https://esm.sh/preact@10.12.1";
-import { render as renderToString } from "https://esm.sh/preact-render-to-string@5.2.6";
-import { DOMParser } from "https://esm.sh/linkedom@0.14.22";
-import * as path from "https://deno.land/std@0.177.0/path/mod.ts";
-import { copy, ensureDir, walk } from "https://deno.land/std@0.177.0/fs/mod.ts";
-import { Command } from "https://deno.land/x/cliffy@v0.25.7/command/command.ts";
-import { debounce } from "https://deno.land/std@0.177.0/async/debounce.ts";
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
-
 // --------------------------------------------------------------------------------
-
+//  ▄████▄   ▒█████   ███▄    █   █████▒██▓  ▄████
+// ▒██▀ ▀█  ▒██▒  ██▒ ██ ▀█   █ ▓██   ▒▓██▒ ██▒ ▀█▒
+// ▒▓█    ▄ ▒██░  ██▒▓██  ▀█ ██▒▒████ ░▒██▒▒██░▄▄▄░
+// ▒▓▓▄ ▄██▒▒██   ██░▓██▒  ▐▌██▒░▓█▒  ░░██░░▓█  ██▓
+// ▒ ▓███▀ ░░ ████▓▒░▒██░   ▓██░░▒█░   ░██░░▒▓███▀▒
+// ░ ░▒ ▒  ░░ ▒░▒░▒░ ░ ▒░   ▒ ▒  ▒ ░   ░▓   ░▒   ▒
+//   ░  ▒     ░ ▒ ▒░ ░ ░░   ░ ▒░ ░      ▒ ░  ░   ░
+// ░        ░ ░ ░ ▒     ░   ░ ░  ░ ░    ▒ ░░ ░   ░
+// ░ ░          ░ ░           ░         ░        ░
+// ░
 export const config = {
   // The site title, to be used on your layout or pages
-  siteName: "cita.tsx (xstatic)",
+  siteName: "cita.tsx",
   // You add can more entries here
 
   // Where the html output will be placed
@@ -191,6 +136,17 @@ export const config = {
   },
 };
 
+// --------------------------------------------------------------------------------
+// ▓█████ ▒██   ██▒ ██▓███   ▒█████   ██▀███  ▄▄▄█████▓  ██████
+// ▓█   ▀ ▒▒ █ █ ▒░▓██░  ██▒▒██▒  ██▒▓██ ▒ ██▒▓  ██▒ ▓▒▒██    ▒
+// ▒███   ░░  █   ░▓██░ ██▓▒▒██░  ██▒▓██ ░▄█ ▒▒ ▓██░ ▒░░ ▓██▄
+// ▒▓█  ▄  ░ █ █ ▒ ▒██▄█▓▒ ▒▒██   ██░▒██▀▀█▄  ░ ▓██▓ ░   ▒   ██▒
+// ░▒████▒▒██▒ ▒██▒▒██▒ ░  ░░ ████▓▒░░██▓ ▒██▒  ▒██▒ ░ ▒██████▒▒
+// ░░ ▒░ ░▒▒ ░ ░▓ ░▒▓▒░ ░  ░░ ▒░▒░▒░ ░ ▒▓ ░▒▓░  ▒ ░░   ▒ ▒▓▒ ▒ ░
+//  ░ ░  ░░░   ░▒ ░░▒ ░       ░ ▒ ▒░   ░▒ ░ ▒░    ░    ░ ░▒  ░ ░
+//    ░    ░    ░  ░░       ░ ░ ░ ▒    ░░   ░   ░      ░  ░  ░
+//    ░  ░ ░    ░               ░ ░     ░                    ░
+//
 export interface PageData {
   title: string;
   desc?: string;
@@ -208,17 +164,46 @@ export interface Page {
 export { h, JSX, ComponentChildren };
 
 // --------------------------------------------------------------------------------
+// ██▓ ███▄ ▄███▓ ██▓███   ▒█████   ██▀███  ▄▄▄█████▓  ██████
+// ▓██▒▓██▒▀█▀ ██▒▓██░  ██▒▒██▒  ██▒▓██ ▒ ██▒▓  ██▒ ▓▒▒██    ▒
+// ▒██▒▓██    ▓██░▓██░ ██▓▒▒██░  ██▒▓██ ░▄█ ▒▒ ▓██░ ▒░░ ▓██▄
+// ░██░▒██    ▒██ ▒██▄█▓▒ ▒▒██   ██░▒██▀▀█▄  ░ ▓██▓ ░   ▒   ██▒
+// ░██░▒██▒   ░██▒▒██▒ ░  ░░ ████▓▒░░██▓ ▒██▒  ▒██▒ ░ ▒██████▒▒
+// ░▓  ░ ▒░   ░  ░▒▓▒░ ░  ░░ ▒░▒░▒░ ░ ▒▓ ░▒▓░  ▒ ░░   ▒ ▒▓▒ ▒ ░
+//  ▒ ░░  ░      ░░▒ ░       ░ ▒ ▒░   ░▒ ░ ▒░    ░    ░ ░▒  ░ ░
+//  ▒ ░░      ░   ░░       ░ ░ ░ ▒    ░░   ░   ░      ░  ░  ░
+//  ░         ░                ░ ░     ░                    ░
+import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
+import { createElement, h } from "https://esm.sh/preact@10.12.1";
+import type { JSX, ComponentChildren } from "https://esm.sh/preact@10.12.1";
+import { render as renderToString } from "https://esm.sh/preact-render-to-string@5.2.6";
+import { DOMParser } from "https://esm.sh/linkedom@0.14.22";
+import * as path from "https://deno.land/std@0.177.0/path/mod.ts";
+import { copy, ensureDir, walk } from "https://deno.land/std@0.177.0/fs/mod.ts";
+import { Command } from "https://deno.land/x/cliffy@v0.25.7/command/command.ts";
+import { debounce } from "https://deno.land/std@0.177.0/async/debounce.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serveDir } from "https://deno.land/std@0.177.0/http/file_server.ts";
 
+// --------------------------------------------------------------------------------
+// ▄▄▄█████▓▓█████  ███▄ ▄███▓ ██▓███   ██▓    ▄▄▄     ▄▄▄█████▓▓█████   ██████
+// ▓  ██▒ ▓▒▓█   ▀ ▓██▒▀█▀ ██▒▓██░  ██▒▓██▒   ▒████▄   ▓  ██▒ ▓▒▓█   ▀ ▒██    ▒
+// ▒ ▓██░ ▒░▒███   ▓██    ▓██░▓██░ ██▓▒▒██░   ▒██  ▀█▄ ▒ ▓██░ ▒░▒███   ░ ▓██▄
+// ░ ▓██▓ ░ ▒▓█  ▄ ▒██    ▒██ ▒██▄█▓▒ ▒▒██░   ░██▄▄▄▄██░ ▓██▓ ░ ▒▓█  ▄   ▒   ██▒
+//   ▒██▒ ░ ░▒████▒▒██▒   ░██▒▒██▒ ░  ░░██████▒▓█   ▓██▒ ▒██▒ ░ ░▒████▒▒██████▒▒
+//   ▒ ░░   ░░ ▒░ ░░ ▒░   ░  ░▒▓▒░ ░  ░░ ▒░▓  ░▒▒   ▓▒█░ ▒ ░░   ░░ ▒░ ░▒ ▒▓▒ ▒ ░
+//     ░     ░ ░  ░░  ░      ░░▒ ░     ░ ░ ▒  ░ ▒   ▒▒ ░   ░     ░ ░  ░░ ░▒  ░ ░
+//   ░         ░   ░      ░   ░░         ░ ░    ░   ▒    ░         ░   ░  ░  ░
+//             ░  ░       ░                ░  ░     ░  ░           ░  ░      ░
+//
 const templates = {
   newPageTemplate: (filename: string) =>
     `
 /** @jsx h */
-import { h, PageData, PageRender } from "${templates.getRelativeImport(
-      filename
-    )}";
+import { h, PageData, PageRender } from "${util.getRelativeImport(filename)}";
 
 export const data: PageData = {
-  title: "${internal.formatTitle(filename)}",
+  title: "${util.formatTitle(filename)}",
 };
 
 export const render: PageRender = () => {
@@ -267,34 +252,35 @@ window.onfocus = function() {
   }
 };
   `,
-
-  getRelativeImport: (filename: string) => {
-    filename = path.relative(path.dirname(filename), "./cita.tsx");
-    if (!filename.match(/\.\/\w/)) {
-      filename = "./" + filename;
-    }
-    return filename;
-  },
 };
-
-export function getSiteTitle(pageTitle?: string) {
-  if (pageTitle) {
-    return `${pageTitle}- ${config.siteName}`;
-  }
-  return config.siteName;
-}
 
 export function md(markdown: string) {
   return Marked.parse(markdown).content;
 }
 
 // --------------------------------------------------------------------------------
-type LoadedPage = Page & {
-  path: string;
-  valid: boolean;
-};
-
-const internal = {
+//  █    ██ ▄▄▄█████▓ ██▓ ██▓
+//  ██  ▓██▒▓  ██▒ ▓▒▓██▒▓██▒
+// ▓██  ▒██░▒ ▓██░ ▒░▒██▒▒██░
+// ▓▓█  ░██░░ ▓██▓ ░ ░██░▒██░
+// ▒▒█████▓   ▒██▒ ░ ░██░░██████▒
+// ░▒▓▒ ▒ ▒   ▒ ░░   ░▓  ░ ▒░▓  ░
+// ░░▒░ ░ ░     ░     ▒ ░░ ░ ▒  ░
+//  ░░░ ░ ░   ░       ▒ ░  ░ ░
+//    ░               ░      ░  ░
+const util = {
+  deindent(str: string) {
+    str = str.trim();
+    const lines = str.split("\n");
+    return lines.map((line) => line.trim()).join("\n");
+  },
+  getRelativeImport(filename: string) {
+    filename = path.relative(path.dirname(filename), "./cita.tsx");
+    if (!filename.match(/\.\/\w/)) {
+      filename = "./" + filename;
+    }
+    return filename;
+  },
   mapRelativePath(pagePath: string, href: string) {
     if (!href) return "";
     if (!href.match(/^https?:\/\//)) {
@@ -303,6 +289,92 @@ const internal = {
     }
     return href;
   },
+  formatTitle(filename: string) {
+    filename = path.basename(filename, ".tsx");
+    filename = filename.replace(/[._-]/g, " ");
+    filename = filename.split(/\s+/).join(" ");
+    return filename.slice(0, 1).toUpperCase() + filename.slice(1);
+  },
+
+  async copyDir(dir: string, dest: string) {
+    await ensureDir(dest);
+
+    for await (const file of walk(dir, { includeDirs: false })) {
+      const destFile = path.join(dest, file.path);
+      await ensureDir(path.dirname(destFile));
+
+      const srcStat = await util.stat(file.path);
+      const destStat = await util.stat(destFile);
+
+      if (!srcStat) continue;
+      if (
+        !(
+          destStat &&
+          (srcStat.mtime?.getTime() ?? 0) <= (destStat.mtime?.getTime() ?? 0)
+        )
+      ) {
+        console.log("copy", file.path, "->", destFile);
+        await copy(file.path, destFile, {
+          overwrite: true,
+          preserveTimestamps: false,
+        });
+      }
+    }
+  },
+
+  async stat(filename: string) {
+    try {
+      return await Deno.stat(filename);
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) {
+        throw e;
+      }
+      return null;
+    }
+  },
+
+  isDirectory(filename: string) {
+    try {
+      const stat = Deno.statSync(filename);
+      return stat.isDirectory;
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) {
+        throw e;
+      }
+      return false;
+    }
+  },
+
+  fileExists(filename: string) {
+    try {
+      Deno.statSync(filename);
+      return true;
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) {
+        throw e;
+      }
+      return false;
+    }
+  },
+};
+
+type LoadedPage = Page & {
+  path: string;
+  valid: boolean;
+};
+
+// --------------------------------------------------------------------------------
+//  ██▓ ███▄    █ ▄▄▄█████▓▓█████  ██▀███   ███▄    █  ▄▄▄       ██▓
+// ▓██▒ ██ ▀█   █ ▓  ██▒ ▓▒▓█   ▀ ▓██ ▒ ██▒ ██ ▀█   █ ▒████▄    ▓██▒
+// ▒██▒▓██  ▀█ ██▒▒ ▓██░ ▒░▒███   ▓██ ░▄█ ▒▓██  ▀█ ██▒▒██  ▀█▄  ▒██░
+// ░██░▓██▒  ▐▌██▒░ ▓██▓ ░ ▒▓█  ▄ ▒██▀▀█▄  ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░
+// ░██░▒██░   ▓██░  ▒██▒ ░ ░▒████▒░██▓ ▒██▒▒██░   ▓██░ ▓█   ▓██▒░██████▒
+// ░▓  ░ ▒░   ▒ ▒   ▒ ░░   ░░ ▒░ ░░ ▒▓ ░▒▓░░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒░▓  ░
+//  ▒ ░░ ░░   ░ ▒░    ░     ░ ░  ░  ░▒ ░ ▒░░ ░░   ░ ▒░  ▒   ▒▒ ░░ ░ ▒  ░
+//  ▒ ░   ░   ░ ░   ░         ░     ░░   ░    ░   ░ ░   ░   ▒     ░ ░
+//  ░           ░             ░  ░   ░              ░       ░  ░    ░  ░
+//
+const internal = {
   renderPage(page: LoadedPage, autoReloadOnFocus?: boolean): string {
     const domParser = new DOMParser();
     const html = renderToString(page.render());
@@ -311,7 +383,7 @@ const internal = {
     // rewrite local hrefs to relative path
     for (const a of dom.querySelectorAll("a, link, area, base")) {
       const anchor = a as { href: string };
-      anchor.href = internal.mapRelativePath(page.path, anchor.href);
+      anchor.href = util.mapRelativePath(page.path, anchor.href);
     }
 
     // rewrite local srcs to relative path
@@ -319,7 +391,7 @@ const internal = {
       "audio, img, video, script, input, track, embed"
     )) {
       const node = a as { src: string };
-      node.src = internal.mapRelativePath(page.path, node.src);
+      node.src = util.mapRelativePath(page.path, node.src);
     }
 
     if (autoReloadOnFocus && config.dev.autoReloadOnFocus) {
@@ -350,7 +422,7 @@ const internal = {
 
     try {
       const obj = await import("./" + filename);
-      if (internal.isPage(obj)) {
+      if (internal.validatePage(obj)) {
         page = {
           ...obj,
           valid: true,
@@ -381,7 +453,7 @@ const internal = {
 
       try {
         const obj = await import("./" + entry.path);
-        if (internal.isPage(obj)) {
+        if (internal.validatePage(obj)) {
           page = {
             ...obj,
             valid: true,
@@ -397,7 +469,7 @@ const internal = {
     return pages;
   },
 
-  isPage(obj: unknown): obj is Page {
+  validatePage(obj: unknown): obj is Page {
     if (!obj) return false;
     if (typeof obj !== "object") return false;
 
@@ -485,8 +557,8 @@ const internal = {
     for (const entry of config.assets) {
       if (!entry) continue;
 
-      if (internal.isDirectory(entry)) {
-        await internal.copyDir(entry, path.join(config.buildDir));
+      if (util.isDirectory(entry)) {
+        await util.copyDir(entry, path.join(config.buildDir));
       } else {
         try {
           await copy(entry, path.join(config.buildDir, entry), {
@@ -520,13 +592,6 @@ export default sitemap;
     });
   },
 
-  formatTitle(filename: string) {
-    filename = path.basename(filename, ".tsx");
-    filename = filename.replace(/[._-]/g, " ");
-    filename = filename.split(/\s+/).join(" ");
-    return filename.slice(0, 1).toUpperCase() + filename.slice(1);
-  },
-
   async createNewPage(filename: string) {
     const contents = templates.newPageTemplate(filename);
 
@@ -547,70 +612,77 @@ export default sitemap;
     }
   },
 
-  async copyDir(dir: string, dest: string) {
-    await ensureDir(dest);
-
-    for await (const file of walk(dir, { includeDirs: false })) {
-      const destFile = path.join(dest, file.path);
-      await ensureDir(path.dirname(destFile));
-
-      const srcStat = await internal.stat(file.path);
-      const destStat = await internal.stat(destFile);
-
-      if (!srcStat) continue;
-      if (
-        !(
-          destStat &&
-          (srcStat.mtime?.getTime() ?? 0) <= (destStat.mtime?.getTime() ?? 0)
-        )
-      ) {
-        console.log("copy", file.path, "->", destFile);
-        await copy(file.path, destFile, {
-          overwrite: true,
-          preserveTimestamps: false,
-        });
+  toMarkdown() {
+    type header = keyof typeof documentation;
+    type gsHeader = keyof typeof documentation.$getting_started;
+    const formatHeader = (header: header | gsHeader) => {
+      let str = header as string;
+      let count = 0;
+      while (str[count] === "$") count++;
+      str = str.replaceAll("$", "");
+      str = str.replace(/[._-]/g, " ");
+      str = str.slice(0, 1).toUpperCase() + str.slice(1);
+      str = "#".repeat(count + 1) + " " + str;
+      return str;
+    };
+    const getSteps = (obj: Record<string, unknown>) => {
+      const result: string[] = [];
+      for (const [k, v] of Object.entries(obj)) {
+        const i = parseInt(k, 10);
+        if (typeof v === "string" && !isNaN(i)) {
+          result[i] = i + ". " + v;
+        }
       }
-    }
-  },
+      return result.join("\n");
+    };
 
-  async stat(filename: string) {
-    try {
-      return await Deno.stat(filename);
-    } catch (e) {
-      if (!(e instanceof Deno.errors.NotFound)) {
-        throw e;
-      }
-      return null;
-    }
-  },
+    return util.deindent(`
+      # cita.tsx (backwards for xstatic)
 
-  isDirectory(filename: string) {
-    try {
-      const stat = Deno.statSync(filename);
-      return stat.isDirectory;
-    } catch (e) {
-      if (!(e instanceof Deno.errors.NotFound)) {
-        throw e;
-      }
-      return false;
-    }
-  },
+      ${formatHeader("$what_is_this")}
+      ${documentation.$what_is_this}
 
-  fileExists(filename: string) {
-    try {
-      Deno.statSync(filename);
-      return true;
-    } catch (e) {
-      if (!(e instanceof Deno.errors.NotFound)) {
-        throw e;
-      }
-      return false;
-    }
+      ${formatHeader("$target_users")}
+      ${documentation.$target_users}
+
+
+      ${formatHeader("$getting_started")}
+      ${getSteps(documentation.$getting_started)}
+      ${documentation.$getting_started.NOTE}
+
+      ${formatHeader("$$setup_dino")}
+      ${getSteps(documentation.$getting_started.$$setup_dino)}
+
+      ${formatHeader("$$setup_cita")}
+      ${getSteps(documentation.$getting_started.$$setup_cita)}
+
+      ${formatHeader("$development_and_work_flow")}
+      ${getSteps(documentation.$development_and_work_flow)}
+
+      ${documentation.$development_and_work_flow.mapping}
+
+      ${documentation.$development_and_work_flow.NOTE}
+
+      ${formatHeader("$building")}
+      ${documentation.$building}
+
+      ${formatHeader("$configuring_and_extension")}
+      ${documentation.$configuring_and_extension}
+  `);
   },
 };
 
 // --------------------------------------------------------------------------------
-
+//  ▄████▄   ▒█████   ███▄ ▄███▓ ███▄ ▄███▓ ▄▄▄       ███▄    █ ▓█████▄   ██████
+// ▒██▀ ▀█  ▒██▒  ██▒▓██▒▀█▀ ██▒▓██▒▀█▀ ██▒▒████▄     ██ ▀█   █ ▒██▀ ██▌▒██    ▒
+// ▒▓█    ▄ ▒██░  ██▒▓██    ▓██░▓██    ▓██░▒██  ▀█▄  ▓██  ▀█ ██▒░██   █▌░ ▓██▄
+// ▒▓▓▄ ▄██▒▒██   ██░▒██    ▒██ ▒██    ▒██ ░██▄▄▄▄██ ▓██▒  ▐▌██▒░▓█▄   ▌  ▒   ██▒
+// ▒ ▓███▀ ░░ ████▓▒░▒██▒   ░██▒▒██▒   ░██▒ ▓█   ▓██▒▒██░   ▓██░░▒████▓ ▒██████▒▒
+// ░ ░▒ ▒  ░░ ▒░▒░▒░ ░ ▒░   ░  ░░ ▒░   ░  ░ ▒▒   ▓▒█░░ ▒░   ▒ ▒  ▒▒▓  ▒ ▒ ▒▓▒ ▒ ░
+//   ░  ▒     ░ ▒ ▒░ ░  ░      ░░  ░      ░  ▒   ▒▒ ░░ ░░   ░ ▒░ ░ ▒  ▒ ░ ░▒  ░ ░
+// ░        ░ ░ ░ ▒  ░      ░   ░      ░     ░   ▒      ░   ░ ░  ░ ░  ░ ░  ░  ░
+// ░ ░          ░ ░         ░          ░         ░  ░         ░    ░          ░
+// ░                                                             ░
 const commands = {
   async build(options: { autoReloadOnFocus?: boolean }, filenames: string[]) {
     let pages: LoadedPage[] = [];
@@ -716,28 +788,38 @@ const commands = {
   },
 
   async init() {
-    if (!internal.fileExists("components.tsx")) {
+    if (!util.fileExists("components.tsx")) {
       await Deno.writeTextFile("components.tsx", templates.layoutTemplate);
     }
-    if (!internal.fileExists("index.tsx")) {
+    if (!util.fileExists("index.tsx")) {
       await internal.createNewPage("index.tsx");
     }
   },
 };
 
+// --------------------------------------------------------------------------------
+//  ███▄ ▄███▓ ▄▄▄       ██▓ ███▄    █
+// ▓██▒▀█▀ ██▒▒████▄    ▓██▒ ██ ▀█   █
+// ▓██    ▓██░▒██  ▀█▄  ▒██▒▓██  ▀█ ██▒
+// ▒██    ▒██ ░██▄▄▄▄██ ░██░▓██▒  ▐▌██▒
+// ▒██▒   ░██▒ ▓█   ▓██▒░██░▒██░   ▓██░
+// ░ ▒░   ░  ░ ▒▒   ▓▒█░░▓  ░ ▒░   ▒ ▒
+// ░  ░      ░  ▒   ▒▒ ░ ▒ ░░ ░░   ░ ▒░
+// ░      ░     ░   ▒    ▒ ░   ░   ░ ░
+//        ░         ░  ░ ░           ░
 async function main() {
   await new Command()
-    .name("cliffy")
-    .version("0.1.0")
-    .description("Command line framework for Deno")
+    .name("cita.tsx")
+    .version(version)
+    .description("static site generator")
     .action(() => {
       console.log(documentation.$what_is_this);
-      console.log("add -h to see help");
+      console.log("\n -h, --help to see help");
     })
 
     .command("doc", "show markdown documentation")
     .action((options, ...args) => {
-      console.log(documentation.toMarkdown());
+      console.log(internal.toMarkdown());
     })
 
     .command("build", "build HTML")
@@ -769,6 +851,4 @@ async function main() {
     .parse(Deno.args);
 }
 
-if (import.meta.main) {
-  main();
-}
+if (import.meta.main) main();

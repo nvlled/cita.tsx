@@ -4,7 +4,7 @@ import { Layout, Link } from "./components.tsx";
 import sitemap from "./sitemap_gen.ts";
 
 export const data: PageData = {
-  title: "Index",
+  title: "Home",
 };
 
 type LinkData = { title: string; path: string };
@@ -15,7 +15,7 @@ function Link({ data }: { data: LinkData }) {
 export const render: PageRender = () => {
   const { contents } = sitemap;
   return (
-    <Layout>
+    <Layout title={data.title}>
       <h2>What's this</h2>
       <p
         dangerouslySetInnerHTML={{ __html: md(documentation.$what_is_this) }}

@@ -3,7 +3,7 @@
  */
 export const sitemap = {
   "index": {
-    "title": "Index",
+    "title": "Home",
     "path": "index.tsx"
   },
   "contents": {

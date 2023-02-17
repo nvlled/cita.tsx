@@ -12,7 +12,7 @@ export const render: PageRender = () => {
   const contents = sitemap.contents;
 
   return (
-    <Layout>
+    <Layout title={data.title}>
       <h2>{data.title}</h2>
       <div dangerouslySetInnerHTML={{ __html: md(doc) }} />
 
