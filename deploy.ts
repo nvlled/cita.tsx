@@ -22,5 +22,11 @@ if (await docs.exists()) {
 await docs.mkdir({ recursive: true });
 await $.fs.copy("./_build/", "./docs", { overwrite: true });
 
-await $`git tag v${version}`;
-await $`git push --all`;
+if (Deno.env.get("TAG")) {
+  console.log("tagging new version", version);
+  await $`git tag v${version}`;
+}
+if (Deno.env.get("PUSH")) {
+  console.log("push to remote repo");
+  await $`git push --all`;
+}

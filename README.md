@@ -6,6 +6,9 @@ It aims are to be able to create type-safe pages
 with typescript and jsx with minimal setup.
 (Minimal if you already have vscode and deno setup)
 
+## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)
+![](assets/demo.gif)
+
 ## Target users
 Ideally, this tool would be used by people
 who knows how to use the commandline, and is comfortable

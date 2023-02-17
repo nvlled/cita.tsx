@@ -648,6 +648,9 @@ export default sitemap;
 
       ${formatHeader("$what_is_this")}
       ${documentation.$what_is_this}
+      
+      ## ${documentation.$doclink}
+      ${documentation.$demoImage}
 
       ${formatHeader("$target_users")}
       ${documentation.$target_users}
