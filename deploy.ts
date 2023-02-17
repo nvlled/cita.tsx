@@ -6,6 +6,7 @@
 // - copy to docs (for gh-pages)
 
 import $ from "https://deno.land/x/dax@0.27.0/mod.ts";
+import { version } from "./cita.tsx";
 
 await $`./cita.tsx clean`;
 await $`./cita.tsx build`;
@@ -20,3 +21,6 @@ if (await docs.exists()) {
 
 await docs.mkdir({ recursive: true });
 await $.fs.copy("./_build/", "./docs", { overwrite: true });
+
+await $`git tag v${version}`;
+await $`git push --all`;
