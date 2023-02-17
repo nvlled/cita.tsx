@@ -5,6 +5,8 @@ import sitemap from "./sitemap_gen.ts";
 
 export const data: PageData = {
   title: "Home",
+  created: "2023-02-17",
+  $lastModified: "2023-02-17",
 };
 
 type LinkData = { title: string; path: string };

@@ -5,6 +5,8 @@ import sitemap from "../sitemap_gen.ts";
 
 export const data: PageData = {
   title: "Getting started",
+  created: "2023-02-17",
+  $lastModified: "2023-02-17",
 };
 
 export const render: PageRender = () => {
