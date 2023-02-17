@@ -3,7 +3,10 @@
 // This script does the following:
 // - rebuild all files
 // - regenerate readme
-// - copy to docs (for gh-pages)
+// - copy _build to docs/ (for gh-pages)
+// And optionally
+// - tag new version
+// - push to remote
 
 import $ from "https://deno.land/x/dax@0.27.0/mod.ts";
 import { version } from "./cita.tsx";
