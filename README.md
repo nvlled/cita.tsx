@@ -3,8 +3,9 @@
 ## What is this
 cita.tsx is a single-file static site generator based on deno.
 It aims are to be able to create type-safe pages
-with typescript and jsx with minimal setup.
-(Minimal if you already have vscode and deno setup)
+using typescript and jsx with minimal* setup.
+
+*Minimal if you already have vscode and deno setup
 
 ## [demo/documentation](https://nvlled.github.io/cita.tsx/index.html)
 ![](assets/demo.gif)
@@ -28,7 +29,7 @@ $ cd my-new-site
 3. setup cita.tsx (see blow)
 4. create a page: `$ ./cita.tsx new homepage.tsx`
 5. build output: `$ ./cita.tsx build`
-> If you are using vscode, run do `Deno: Initialize Workspace Configuration`
+> If you are using vscode, do run `Deno: Initialize Workspace Configuration` for every new project
 
 ### Setup dino
 

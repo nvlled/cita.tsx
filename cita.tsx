@@ -18,8 +18,9 @@ export const documentation = {
   $what_is_this: [
     "cita.tsx is a single-file static site generator based on deno.",
     "It aims are to be able to create type-safe pages",
-    "with typescript and jsx with minimal setup.",
-    "(Minimal if you already have vscode and deno setup)",
+    "using typescript and jsx with minimal* setup.",
+    "",
+    "*Minimal if you already have vscode and deno setup",
   ].join("\n"),
 
   $doclink:
@@ -48,7 +49,7 @@ export const documentation = {
     [4]: `create a page: \`$ ./cita.tsx new homepage.tsx\` `,
     [5]: `build output: \`$ ./cita.tsx build\` `,
 
-    NOTE: "> If you are using vscode, run do `Deno: Initialize Workspace Configuration`",
+    NOTE: "> If you are using vscode, do run `Deno: Initialize Workspace Configuration` for every new project",
 
     $$setup_dino: {
       [1]: "[install deno](https://deno.land/manual@v1.30.3/getting_started/installation)",
@@ -289,8 +290,11 @@ const styleSheet = virtualSheet();
 // Uncomment the following code block if you want to use twind:
 // https://twind.dev/handbook/styling-with-twind.html
 /*
-export { tw };
-import { setup as setupTwind, tw } from "https://esm.sh/twind@0.16.16";
+export { tw, apply, css };
+import { setup as setupTwind } from "https://cdn.skypack.dev/twind";
+import { tw, apply, css } from "https://cdn.skypack.dev/twind/css";
+import * as twColors from "https://cdn.skypack.dev/twind/colors";
+
 setupTwind({
   theme: {
     fontFamily: {
@@ -318,6 +322,7 @@ const util = {
     const lines = str.split("\n");
     return lines.map((line) => line.trim()).join("\n");
   },
+
   getRelativeImport(filename: string) {
     filename = path.relative(path.dirname(filename), "./cita.tsx");
     if (!filename.match(/\.\/\w/)) {
@@ -325,14 +330,17 @@ const util = {
     }
     return filename;
   },
+
   mapRelativePath(pagePath: string, href: string) {
     if (!href) return "";
+    if (href.match(/^\#/)) return href;
     if (!href.match(/^https?:\/\//)) {
       href = href.replace(".tsx", ".html");
       href = path.relative(pagePath, href).replace("../", "./");
     }
     return href;
   },
+
   formatTitle(filename: string) {
     filename = path.basename(filename, ".tsx");
     filename = filename.replace(/[._-]/g, " ");
@@ -400,6 +408,7 @@ const util = {
       return false;
     }
   },
+
   today() {
     return formatDate(new Date(), "yyyy-MM-dd");
   },
@@ -899,7 +908,7 @@ async function main() {
     .arguments("[files...:string]")
     .option(
       "-a, --auto-reload-on-focus",
-      "adds a script on pages that makes it auto-reload when the page is focused"
+      "injects a script on the pages that makes it auto-reload when the page is refocused"
     )
     .action((options, ...args) => {
       commands.build(options, args);
@@ -929,3 +938,25 @@ async function main() {
 }
 
 if (import.meta.main) main();
+
+// MIT License
+//
+// Copyright (c) [2023] [Ronald Casili]
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
